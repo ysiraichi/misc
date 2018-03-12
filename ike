@@ -1,0 +1,151 @@
+__ike_cmd_ike_paths="$HOME/.ike_paths"
+
+__ike_cmd_get_key() {
+    echo "$1" | sed 's/.*key:\x27\(.*\)\x27,.*/\1/g'
+}
+
+__ike_cmd_get_path() {
+    echo "$1" | sed 's/.*path:\x27\(.*\)\x27.*/\1/g'
+}
+
+__ike_cmd_help() {
+    echo -e "Using ike_paths: $__ike_cmd_ike_paths"
+    echo -e "Usage:"
+    echo -e "\t./ike <key>"
+}
+
+__ikeadm_cmd_help() {
+    echo -e "Using ike_paths: $__ike_cmd_ike_paths"
+    echo -e "Usage:"
+    echo -e "\t./ikeadm [list|help]"
+    echo -e "\t./ikeadm [add] <key>:<path>"
+    echo -e "\t./ikeadm [rm|query] <key>"
+}
+
+__ike_cmd_list() {
+    max=10
+
+    cat $__ike_cmd_ike_paths | {
+        while read line; do
+            if [ "$line" == "" ]; then
+                continue
+            fi
+
+            key=`__ike_cmd_get_key "$line"`
+            path=`__ike_cmd_get_path "$line"`
+            printf "%${max}s ~> %s\n" "[$key]" "[$path]"
+        done
+    }
+}
+
+__ike_cmd_query() {
+    target_key=$1
+    cat $__ike_cmd_ike_paths | {
+        target_path=""
+
+        while read line; do
+            key=`__ike_cmd_get_key "$line"`
+            path=`__ike_cmd_get_path "$line"`
+
+            if [ "$key" == "$target_key" ]; then
+                target_path=$path
+                break
+            fi
+        done
+
+        echo $target_path
+    }
+}
+
+__ike_cmd_ike() {
+    key=$1
+    path=`__ike_cmd_query "$key"`
+
+    if [ "$path" == "" ]; then
+        echo "Error: key '$key' not found."
+    else
+        cd "$path"
+    fi
+
+}
+
+__ike_cmd_add_tuple() {
+    key=$1
+    path=$2
+    echo "{key:'$key', path:'$path'}" >> $__ike_cmd_ike_paths
+}
+
+__ike_cmd_add() {
+    exists=true
+
+    while $exists; do
+        echo -ne "Key: "
+        read key
+
+        query=`__ike_cmd_query "$key"`
+
+        if [ "$query" != "" ]; then
+            echo -e "Error: Key '$key' already exists."
+        else
+            exists=false
+        fi
+    done
+
+    echo -ne "(Absolute)Path: "
+    read path
+
+    echo -ne "Add '$key:$path'[Y/n]?: "
+    read ans
+
+    case $ans in
+        y|Y|"")
+            __ike_cmd_add_tuple "$key" "$path";;
+    esac
+}
+
+__ike_cmd_rm() {
+    key=$1
+    path=`__ike_cmd_query "$key"`
+
+    if [ "$path" == "" ]; then
+        echo "Error: key '$key' not found."
+    else
+        tmp=".__ike_cmd_ike_paths.tmp"
+        cat $__ike_cmd_ike_paths | sed "/key:\x27$key\x27/d" > $tmp
+        mv $tmp $__ike_cmd_ike_paths
+    fi
+}
+
+ike() {
+    if [ $# -lt 1 ]; then
+        __ike_cmd_help
+    else
+        case $1 in
+            help)
+                __ike_cmd_help;;
+            *)
+                __ike_cmd_ike $1;;
+        esac
+    fi
+}
+
+ikeadm() {
+    if [ $# -lt 1 ]; then
+        __ikeadm_cmd_help
+    else
+        case $1 in
+            help) 
+                __ike_cmd_help;;
+            list)
+                __ike_cmd_list;;
+            query)
+                shift; __ike_cmd_query "$1";;
+            rm)
+                shift; __ike_cmd_rm "$1";;
+            add)
+                shift; __ike_cmd_add;;
+            *)
+                __ikeadm_cmd_help;;
+        esac
+    fi
+}

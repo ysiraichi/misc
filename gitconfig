@@ -1,0 +1,12 @@
+[user]
+	email = yukio.siraichi@gmail.com
+	name = Yukio Siraichi
+[core]
+	editor = nvim
+[alias]
+	co = checkout
+	br = branch
+	st = status
+	undo = checkout HEAD --
+	graph = log --oneline --graph --decorate --all
+	head = log -3

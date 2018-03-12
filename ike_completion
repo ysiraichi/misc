@@ -1,0 +1,43 @@
+_ike() {
+    local cur prev opts keys
+    COMPREPLY=()
+
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [ "${prev}" == "ike" ]; then
+        opts="help `ikeadm list | sed 's/^  *\[\(.*\)\] ~> \[.*\]/\1/g'`"
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+    fi
+
+    return 0
+}
+
+_ikeadm() {
+    local cur prev opts keys
+    COMPREPLY=()
+
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    opts="add rm list query help"
+
+    case ${prev} in
+        list|help|add)
+            ;;
+
+        query|rm)
+            keys=`ikeadm list | sed 's/^  *\[\(.*\)\] ~> \[.*\]/\1/g'`
+            COMPREPLY=( $(compgen -W "${keys}" -- "${cur}") )
+            ;;
+
+        ikeadm)
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            ;;
+    esac
+
+    return 0
+}
+
+complete -F _ike ike
+complete -F _ikeadm ikeadm
