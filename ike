@@ -133,6 +133,10 @@ ikeadm() {
     if [ $# -lt 1 ]; then
         __ikeadm_cmd_help
     else
+        if [ ! -f "$__ike_cmd_ike_paths" ]; then
+            touch "$__ike_cmd_ike_paths"
+        fi
+
         case $1 in
             help) 
                 __ike_cmd_help;;
