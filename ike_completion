@@ -6,7 +6,7 @@ _ike() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     if [ "${prev}" == "ike" ]; then
-        opts="help `ikeadm list | sed 's/^  *\[\(.*\)\] ~> \[.*\]/\1/g'`"
+        opts="help `ikeadm list | sed 's/^ *\[\(.*\)\] ~> \[.*\]/\1/g'`"
         COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
     fi
 
@@ -27,7 +27,7 @@ _ikeadm() {
             ;;
 
         query|rm)
-            keys=`ikeadm list | sed 's/^  *\[\(.*\)\] ~> \[.*\]/\1/g'`
+            keys=`ikeadm list | sed 's/^ *\[\(.*\)\] ~> \[.*\]/\1/g'`
             COMPREPLY=( $(compgen -W "${keys}" -- "${cur}") )
             ;;
 
