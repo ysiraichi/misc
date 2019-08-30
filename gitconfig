@@ -8,5 +8,5 @@
 	br = branch
 	st = status
 	undo = checkout HEAD --
-	graph = log --oneline --graph --decorate --all
+	graph = log --graph --format=format:'%C(yellow)%h %C(cyan)%ad %C(reset)%s -- %C(yellow)%an%C(red)%d' --date=short
 	head = log -3
