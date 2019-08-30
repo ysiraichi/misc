@@ -30,23 +30,56 @@ fi
 
 bold='\[\e[1m\]'
 reset='\[\e[0m\]'
-gitC='\[\e[38;5;208m\]'
-pathC='\[\e[38;5;33m\]'
-userC='\[\e[38;5;40m\]'
-signC='\[\e[38;5;1m\]'
-
 signal='⪧'
 
-prompt() {
-    gitI=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
+get_foreground_color() {
+    echo "\[\e[38;5;${1}m\]"
+}
 
+get_background_color() {
+    echo "\[\e[48;5;${1}m\]"
+}
+
+colors=( 208 33 40 1 246 234 196 )
+gitC=`get_foreground_color ${colors[0]}`
+pathC=`get_foreground_color ${colors[1]}`
+userC=`get_foreground_color ${colors[2]}`
+signC=`get_foreground_color ${colors[3]}`
+bracC=`get_foreground_color ${colors[4]}`
+backC=`get_background_color ${colors[5]}`
+retC=`get_foreground_color ${colors[6]}`
+
+
+prompt() {
+    ret=`echo $?`
+    if [ $ret -eq 0 ]; then
+        ret=""
+    else
+        ret="(${ret})\n"
+    fi
+
+    gitI=`git rev-parse --abbrev-ref HEAD 2> /dev/null`
     if [ "$gitI" != "" ]; then
         gitI="($gitI) "
     fi
 
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]"
-    PS1+="${bold}${userC}\u@\h ${gitC}${gitI}${pathC}\w${reset}\n"
-    PS1+="${bold}${signC}${signal} ${reset}"
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)} \a\]"
+
+    # Show the return value if failed.
+    PS1+="${retC}${ret}"
+
+    # [
+    PS1+="${backC}"
+    PS1+="${bold}${bracC}[${reset}"
+
+    # user@host (branch) path
+    PS1+="${backC}"
+    PS1+="${userC}\u@\h ${gitC}${gitI}${pathC}\W"
+
+    # ]
+    PS1+="${bold}${bracC}]${reset}"
+    # prompt
+    PS1+="${signC}${signal}${reset}"
 }
 
 PROMPT_COMMAND=prompt
@@ -93,23 +126,27 @@ export QT_IM_MODULE=ibus
 
 # PATH updates
 pathStart=`date +%s%N`
-localBin="/home/yukio/Programs/.bin_path"
-progPath=`cat $localBin | paste -s -d':'`
-export PATH=$PATH:$progPath
-
-gemPath="/home/yukio/.gem/ruby/2.1.0/bin"
-export PATH=$PATH:$gemPath
+programsBinPath="/home/yukio/_Programs/bin_paths"
+programsPath=`cat $programsBinPath | paste -sd ':'`
+export PATH=$PATH:$programsPath
 pathTime=`echo "scale=4; ($(date +%s%N) - $pathStart)/1000000" | bc`
 echo "Loading path: $pathTime"
 
 # Sourcing ike
-IKE_PATH=/home/yukio/DotFiles
+IKE_PATH=/home/yukio/_DotFiles
 ike_exe="${IKE_PATH}/ike"
 ike_compl="${IKE_PATH}/ike_completion"
 [ -f ${ike_exe} ]; . ${ike_exe}
 [ -f ${ike_compl} ]; . ${ike_compl}
 
-dbus-update-activation-environment --all
+# Bash VI-mode bindings
+set -o vi
+bind -m vi-insert '"jk":vi-movement-mode'
+bind '"\C-l":clear-screen'
+
+# dbus-update-activation-environment --all
 # screenfetch
 
-clear
+export LOCAL_LIBS="$HOME/_Libs"
+
+# clear
