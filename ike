@@ -91,8 +91,10 @@ __ike_cmd_add() {
         fi
     done
 
-    echo -ne "(Absolute)Path: "
-    read path
+    echo -ne "Path: "
+    read relpath
+
+    path=$(realpath $relpath)
 
     echo -ne "Add '$key:$path'[Y/n]?: "
     read ans
@@ -153,3 +155,6 @@ ikeadm() {
         esac
     fi
 }
+
+export -f ike
+export -f ikeadm
