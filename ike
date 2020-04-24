@@ -68,7 +68,7 @@ __ike_cmd_ike() {
     if [ "$path" == "" ]; then
         __ike_cmd_showmsg "$key: key not found."
     else
-        __ike_cmd_showmsg "move to '$path'."
+        __ike_cmd_showmsg "found '$path'."
         cd "$path"
     fi
 }
