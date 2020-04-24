@@ -66,9 +66,9 @@ __ike_cmd_ike() {
     path=`__ike_cmd_query "$key"`
 
     if [ "$path" == "" ]; then
-        __ike_cmd_showmsg "key '$key' not found."
+        __ike_cmd_showmsg "$key: key not found."
     else
-        __ike_cmd_showmsg "moved to $path."
+        __ike_cmd_showmsg "move to '$path'."
         cd "$path"
     fi
 }
@@ -89,7 +89,7 @@ __ike_cmd_add() {
         query=`__ike_cmd_query "$key"`
 
         if [ "$query" != "" ]; then
-            __ike_cmd_showmsg "error: Key '$key' already exists."
+            __ike_cmd_showmsg "$key: key already exists."
         else
             exists=false
         fi
@@ -113,7 +113,7 @@ __ike_cmd_rm() {
     path=`__ike_cmd_query "$key"`
 
     if [ "$path" == "" ]; then
-        __ike_cmd_showmsg "error: key '$key' not found."
+        __ike_cmd_showmsg "$key: key not found."
     else
         tmp=".__ike_cmd_ike_paths.tmp"
         cat $__ike_cmd_ike_paths | sed "/key:\x27$key\x27/d" > $tmp
